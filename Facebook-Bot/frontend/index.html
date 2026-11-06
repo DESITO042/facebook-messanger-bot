@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Amos Bot Dashboard</title>
+<style>
+* { font-family: Arial; box-sizing: border-box; }
+body { margin:0; background:#f0f2f5; display:flex; height:100vh; }
+.sidebar { width:260px; background:#111b21; color:white; padding:20px; }
+.sidebar h2 { color:#a1324a; }
+.sidebar p { color:#8696a0; font-size:13px; }
+.main { flex:1; display:flex; flex-direction:column; }
+.topbar { background:white; padding:15px 20px; display:flex; justify-content:space-between; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+.topbar b { font-size:18px; }
+.badge { background:#25D366; color:white; padding:5px 12px; border-radius:20px; font-size:12px; }
+.chat-area { flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
+.msg { max-width:70%; padding:12px 15px; border-radius:12px; font-size:14px; line-height:1.4; }
+.customer { background:white; align-self:flex-start; }
+.bot { background:#d9fdd3; align-self:flex-end; }
+.input-box { background:white; padding:15px; display:flex; gap:10px; }
+.input-box input { flex:1; padding:12px; border:1px solid #ddd; border-radius:25px; outline:none; }
+.input-box button { background:#25D366; color:white; border:none; padding:12px 25px; border-radius:25px; cursor:pointer; font-weight:bold; }
+.stat { background:white; padding:12px; border-radius:10px; margin-top:15px; }
+.stat b { font-size:22px; color:#111b21; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h2>🤖 DESITO AI Bot</h2>
+  <p>Amos Store - Enugu</p>
+  <div class="stat"><span>Total Chats</span><br><b id="totalChats">0</b></div>
+  <div class="stat"><span>Orders Today</span><br><b>3</b></div>
+  <div class="stat"><span>Status</span><br><b style="color:#25D366; font-size:14px;">● Online</b></div>
+  <p style="margin-top:20px;">Connected Page: <br><b style="color:white;">Desito Store</b></p>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <b>💬 Live Chat - Test Customer</b>
+    <span class="badge">AI Brain: Connected</span>
+  </div>
+  <div class="chat-area" id="chatArea">
+    <div class="msg bot">Hello my customer! Welcome to Amos Store 🙏 How I fit help you today?</div>
+  </div>
+  <div class="input-box">
+    <input id="msgInput" placeholder="Type as customer: e.g. how much be iphone" onkeypress="if(event.key==='Enter') sendMsg()" />
+    <button onclick="sendMsg()">Send</button>
+  </div>
+</div>
+
+<script>
+let count = 0;
+async function sendMsg(){
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if(!text) return;
+  const area = document.getElementById('chatArea');
+  area.innerHTML += `<div class="msg customer">${text}</div>`;
+  input.value = '';
+  count++; document.getElementById('totalChats').innerText = count;
+
+  // Call Backend -> Backend calls Python Brain
+  const res = await fetch('http://localhost:5000/api/chat', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ message: text })
+  });
+  const data = await res.json();
+  area.innerHTML += `<div class="msg bot">${data.reply}</div>`;
+  area.scrollTop = area.scrollHeight;
+}
+</script>
+</body>
+</html>
